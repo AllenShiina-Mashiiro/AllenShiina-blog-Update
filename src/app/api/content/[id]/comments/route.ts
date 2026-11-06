@@ -16,7 +16,7 @@ export async function POST(request:Request,{params}:{params:Promise<{id:string}>
   if(!entry)return NextResponse.json({error:"文章不存在。"}, {status:404});
   const parsed=schema.safeParse(await request.json());if(!parsed.success)return NextResponse.json({error:"评论内容无效。"}, {status:400});
   let recipientId=entry.authorId;
-  if(parsed.data.parentId){const parent=await prisma.comment.findFirst({where:{id:parsed.data.parentId,entryId:id},select:{id:true,authorId:true}});if(!parent)return NextResponse.json({error:"回复目标不存在。"}, {status:404});recipientId=parent.authorId;}
+  if(parsed.data.parentId){const parent=await prisma.comment.findFirst({where:{id:parsed.data.parentId,entryId:id},select:{id:true,authorId:true,parentId:true}});if(!parent)return NextResponse.json({error:"回复目标不存在。"}, {status:404});if(parent.parentId)return NextResponse.json({error:"目前仅支持回复一级评论。"}, {status:400});recipientId=parent.authorId;}
   const comment=await prisma.comment.create({data:{entryId:id,authorId:user.id,body:parsed.data.body,parentId:parsed.data.parentId}});
   if(recipientId!==user.id)await prisma.notification.create({data:{recipientId,actorId:user.id,type:parsed.data.parentId?"REPLY":"COMMENT",title:parsed.data.parentId?"有人回复了文章":"有人评论了你的文章",body:parsed.data.body.slice(0,450),targetUrl:`/entry/${entry.slug}`}});
   return NextResponse.json({comment},{status:201});
