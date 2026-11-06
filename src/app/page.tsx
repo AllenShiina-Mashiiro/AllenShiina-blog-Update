@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 
 const sections = [
   { key: "STUDY", title: "学习笔记", description: "记录思考，让知识慢慢生长。" },
@@ -9,7 +10,7 @@ const sections = [
 ];
 
 export default async function HomePage() {
-  const viewer = await getCurrentUser();
+  const [viewer, announcements] = await Promise.all([getCurrentUser(), prisma.announcement.findMany({where:{isActive:true},orderBy:{createdAt:"desc"},take:3,select:{id:true,title:true,body:true,createdAt:true}})]);
   return (
     <main className="shell">
       <header className="topbar glass">
@@ -17,8 +18,9 @@ export default async function HomePage() {
         <nav aria-label="主导航">
           <Link href="/category/study">学习笔记</Link><Link href="/category/resource">资源</Link><Link href="/category/life">生活</Link><Link href="/category/article">文章</Link>
         </nav>
-        <div className="home-account">{viewer ? <><Link className="login-link" href={`/u/${viewer.username}`}>@{viewer.username}</Link><Link className="login-link" href="/write">写作</Link><Link className="login-link" href="/notifications">通知</Link></> : <Link className="login-link" href="/login">登录 / 注册</Link>}</div>
+        <div className="home-account"><Link className="login-link" href="/search">搜索</Link>{viewer ? <><Link className="login-link" href={`/u/${viewer.username}`}>@{viewer.username}</Link><Link className="login-link" href="/write">写作</Link><Link className="login-link" href="/notifications">通知</Link>{viewer.role === "ADMIN" && <Link className="login-link" href="/admin">管理</Link>}</> : <Link className="login-link" href="/login">登录 / 注册</Link>}</div>
       </header>
+      {announcements.length > 0 && <section className="home-announcements">{announcements.map(item => <article className="glass" key={item.id}><strong>{item.title}</strong><p>{item.body}</p><small>{item.createdAt.toLocaleDateString("zh-CN")}</small></article>)}</section>}
       <section className="hero">
         <p className="eyebrow">PERSONAL SPACE · EST. 2026</p>
         <h1>把喜欢的事物，<br/><em>认真地收藏起来。</em></h1>
