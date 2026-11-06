@@ -34,6 +34,10 @@ jobs:
         with:
           node-version: 22
       - run: npm install
+      - name: Summarize production dependency advisories
+        run: |
+          npm audit --omit=dev --json > npm-audit.json || true
+          node -e 'const report=require("./npm-audit.json"); const items=Object.entries(report.vulnerabilities||{}).map(([name,item])=>({name,severity:item.severity,range:item.range,fixAvailable:item.fixAvailable})); console.log(JSON.stringify({summary:report.metadata?.vulnerabilities,packages:items},null,2))'
       - run: npx prisma validate
       - run: npx prisma migrate deploy
       - run: npx prisma generate
