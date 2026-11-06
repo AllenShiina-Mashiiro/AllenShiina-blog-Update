@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import SakuraPetals from "@/components/SakuraPetals";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export const metadata: Metadata = {
   title: "NEXUS — Personal Archive",
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="zh-CN">
       <body>
         <SakuraPetals />
+        <ThemeToggle />
         {children}
       </body>
     </html>
