@@ -11,12 +11,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [background, logo] = await Promise.all([prisma.siteSetting.findUnique({ where: { key: "site.background" }, select: { value: true } }), prisma.siteSetting.findUnique({ where: { key: "site.logo" }, select: { value: true } })]);
+  const [background, logo, opacity] = await Promise.all([prisma.siteSetting.findUnique({ where: { key: "site.background" }, select: { value: true } }), prisma.siteSetting.findUnique({ where: { key: "site.logo" }, select: { value: true } }), prisma.siteSetting.findUnique({ where: { key: "site.backgroundOpacity" }, select: { value: true } })]);
   const backgroundUrl = typeof background?.value === "string" ? background.value : "";
   const logoUrl = typeof logo?.value === "string" ? logo.value : "";
+  const opacityValue = typeof opacity?.value === "string" ? Math.min(100, Math.max(0, Number(opacity.value))) / 100 : 0.22;
   return (
     <html lang="zh-CN">
-      <body style={{ ...(backgroundUrl ? { "--site-background": "url(" + backgroundUrl + ")" } : {}), ...(logoUrl ? { "--site-logo": "url(" + logoUrl + ")" } : {}) } as React.CSSProperties}>
+      <body style={{ ...(backgroundUrl ? { "--site-background": "url(" + backgroundUrl + ")" } : {}), ...(logoUrl ? { "--site-logo": "url(" + logoUrl + ")" } : {}), "--site-background-opacity": String(opacityValue) } as React.CSSProperties}>
         <SakuraPetals />
         <ThemeToggle />
         {children}
