@@ -11,11 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const background = await prisma.siteSetting.findUnique({ where: { key: "site.background" }, select: { value: true } });
+  const [background, logo] = await Promise.all([prisma.siteSetting.findUnique({ where: { key: "site.background" }, select: { value: true } }), prisma.siteSetting.findUnique({ where: { key: "site.logo" }, select: { value: true } })]);
   const backgroundUrl = typeof background?.value === "string" ? background.value : "";
+  const logoUrl = typeof logo?.value === "string" ? logo.value : "";
   return (
     <html lang="zh-CN">
-      <body style={backgroundUrl ? { "--site-background": `url("${backgroundUrl.replaceAll('"', '%22')}")` } as React.CSSProperties : undefined}>
+      <body style={{ ...(backgroundUrl ? { "--site-background": "url(" + backgroundUrl + ")" } : {}), ...(logoUrl ? { "--site-logo": "url(" + logoUrl + ")" } : {}) } as React.CSSProperties}>
         <SakuraPetals />
         <ThemeToggle />
         {children}
