@@ -29,3 +29,5 @@ body[style*="--site-logo"] .brand span{display:inline-block;width:22px;height:22
 .reply-trigger{border:0;background:transparent;color:var(--rose);font-size:11px;cursor:pointer;margin-left:12px}.reply-form{margin:12px 0 16px 18px;max-width:620px}.reply-form textarea{min-height:72px}
 
 .latest-section{padding:25px 2vw 70px}.latest-section .section-heading{margin-bottom:10px}
+
+.logout-button{background:transparent;color:var(--ink);cursor:pointer;font:inherit}.logout-button:disabled{opacity:.55;cursor:wait}
