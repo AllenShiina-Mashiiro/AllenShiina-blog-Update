@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { EntryInteractions } from "@/components/EntryInteractions";
+import MarkdownBody from "@/components/MarkdownBody";
 export default async function EntryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const viewer = await getCurrentUser();
@@ -13,5 +14,5 @@ export default async function EntryPage({ params }: { params: Promise<{ slug: st
     viewer ? prisma.reaction.findUnique({ where: { entryId_userId: { entryId: entry.id, userId: viewer.id } }, select: { id: true } }) : null,
     viewer ? prisma.bookmark.findUnique({ where: { entryId_userId: { entryId: entry.id, userId: viewer.id } }, select: { id: true } }) : null
   ]);
-  return <main className="shell"><header className="topbar glass"><Link className="brand" href="/">NEXUS<span>✿</span></Link><Link className="login-link" href="/login">登录</Link></header><article className="article-page glass"><Link className="quiet-link" href={`/category/${entry.category.toLowerCase()}`}>← 返回分类</Link><p className="eyebrow">{entry.category} · NEXUS JOURNAL</p><h1>{entry.title}</h1><p className="article-meta">{entry.author.nickname} · @{entry.author.username} · {entry.publishedAt?.toLocaleDateString("zh-CN")} · {entry.viewCount + 1} 次阅读</p>{entry.coverUrl&&<img className="article-cover" src={entry.coverUrl} alt="文章封面"/>}<div className="article-body">{entry.body}</div><EntryInteractions entryId={entry.id} initialLikes={entry._count.reactions} initialLiked={Boolean(liked)} initialSaved={Boolean(saved)} /></article></main>;
+  return <main className="shell"><header className="topbar glass"><Link className="brand" href="/">NEXUS<span>✿</span></Link><Link className="login-link" href="/login">登录</Link></header><article className="article-page glass"><Link className="quiet-link" href={`/category/${entry.category.toLowerCase()}`}>← 返回分类</Link><p className="eyebrow">{entry.category} · NEXUS JOURNAL</p><h1>{entry.title}</h1><p className="article-meta">{entry.author.nickname} · @{entry.author.username} · {entry.publishedAt?.toLocaleDateString("zh-CN")} · {entry.viewCount + 1} 次阅读</p>{entry.coverUrl&&<img className="article-cover" src={entry.coverUrl} alt="文章封面"/>}<div className="article-body"><MarkdownBody content={entry.body} /></div><EntryInteractions entryId={entry.id} initialLikes={entry._count.reactions} initialLiked={Boolean(liked)} initialSaved={Boolean(saved)} /></article></main>;
 }
