@@ -12,6 +12,7 @@ const sections = [
 
 export default async function HomePage() {
   const [viewer, announcements, latest] = await Promise.all([getCurrentUser(), prisma.announcement.findMany({where:{isActive:true},orderBy:{createdAt:"desc"},take:3,select:{id:true,title:true,body:true,createdAt:true}}), prisma.contentEntry.findMany({where:{status:"PUBLISHED"},orderBy:{publishedAt:"desc"},take:6,select:{id:true,title:true,slug:true,excerpt:true,category:true,publishedAt:true,author:{select:{nickname:true}}}})]);
+  const pinned = viewer ? await prisma.contentPin.findMany({where:{userId:viewer.id,entry:{status:"PUBLISHED"}},orderBy:{position:"asc"},take:8,include:{entry:{select:{id:true,title:true,slug:true,excerpt:true,category:true}}}}) : [];
   return (
     <main className="shell">
       <header className="topbar glass">
@@ -22,6 +23,7 @@ export default async function HomePage() {
         <div className="home-account"><Link className="login-link" href="/search">搜索</Link><Link className="login-link" href="/members">成员</Link>{viewer ? <><Link className="login-link" href={`/u/${viewer.username}`}>@{viewer.username}</Link><Link className="login-link" href="/account">资料</Link><Link className="login-link" href="/bookmarks">收藏</Link><Link className="login-link" href="/write">写作</Link><Link className="login-link" href="/notifications">通知</Link>{viewer.role === "ADMIN" && <Link className="login-link" href="/admin">管理</Link>}<LogoutButton /></> : <Link className="login-link" href="/login">登录 / 注册</Link>}</div>
       </header>
       {announcements.length > 0 && <section className="home-announcements">{announcements.map(item => <article className="glass" key={item.id}><strong>{item.title}</strong><p>{item.body}</p><small>{item.createdAt.toLocaleDateString("zh-CN")}</small></article>)}</section>}
+      {pinned.length>0&&<section className="pinned-home"><div className="section-heading"><div><p className="eyebrow">YOUR PINNED COLLECTION</p><h2>我的主页置顶</h2></div><Link className="quiet-link" href={"/u/"+viewer!.username}>查看个人主页 ↗</Link></div><div className="entry-list">{pinned.map(item=><Link className="entry-card glass" href={"/entry/"+item.entry.slug} key={item.id}><div><h3>{item.entry.title}</h3><p>{item.entry.excerpt||"暂无摘要"}</p><small>{item.entry.category}</small></div><span>✦</span></Link>)}</div></section>}
       <section className="hero">
         <p className="eyebrow">PERSONAL SPACE · EST. 2026</p>
         <h1>把喜欢的事物，<br/><em>认真地收藏起来。</em></h1>
