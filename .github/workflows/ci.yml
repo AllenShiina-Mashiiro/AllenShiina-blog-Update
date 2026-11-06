@@ -63,6 +63,7 @@ jobs:
           for attempt in $(seq 1 40); do
             if curl --fail --silent http://127.0.0.1:3000/api/health | grep -q '"database":"connected"'; then
               echo "Compose app and PostgreSQL are healthy."
+              node scripts/smoke-test.mjs
               exit 0
             fi
             sleep 3
