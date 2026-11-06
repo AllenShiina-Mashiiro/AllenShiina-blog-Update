@@ -10,7 +10,7 @@ const sections = [
 ];
 
 export default async function HomePage() {
-  const [viewer, announcements] = await Promise.all([getCurrentUser(), prisma.announcement.findMany({where:{isActive:true},orderBy:{createdAt:"desc"},take:3,select:{id:true,title:true,body:true,createdAt:true}})]);
+  const [viewer, announcements, latest] = await Promise.all([getCurrentUser(), prisma.announcement.findMany({where:{isActive:true},orderBy:{createdAt:"desc"},take:3,select:{id:true,title:true,body:true,createdAt:true}}), prisma.contentEntry.findMany({where:{status:"PUBLISHED"},orderBy:{publishedAt:"desc"},take:6,select:{id:true,title:true,slug:true,excerpt:true,category:true,publishedAt:true,author:{select:{nickname:true}}}})]);
   return (
     <main className="shell">
       <header className="topbar glass">
@@ -35,6 +35,7 @@ export default async function HomePage() {
           </Link>)}
         </div>
       </section>
+      <section className="latest-section"><div className="section-heading"><div><p className="eyebrow">RECENT JOURNAL</p><h2>最近发布</h2></div><Link className="quiet-link" href="/search">浏览全部 ↗</Link></div><div className="entry-list">{latest.map(entry=><Link className="entry-card glass" href={"/entry/"+entry.slug} key={entry.id}><div><h2>{entry.title}</h2><p>{entry.excerpt||"暂无摘要"}</p><small>{entry.author.nickname} · {entry.category} · {entry.publishedAt?.toLocaleDateString("zh-CN")}</small></div><span>↗</span></Link>)}{!latest.length&&<div className="empty-state glass">还没有公开发布的内容。</div>}</div></section>
       <footer><span>NEXUS</span><span>Made with care · 2026</span></footer>
     </main>
   );
