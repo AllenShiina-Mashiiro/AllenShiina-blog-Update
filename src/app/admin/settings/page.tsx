@@ -1,0 +1,10 @@
+"use client";
+import Link from "next/link";
+import { useEffect,useState } from "react";
+type Setting={key:string;value:unknown};
+export default function AdminSettingsPage(){
+ const [title,setTitle]=useState("NEXUS"),[description,setDescription]=useState(""),[background,setBackground]=useState(""),[logo,setLogo]=useState(""),[message,setMessage]=useState("");
+ useEffect(()=>{void fetch("/api/admin/settings").then(r=>r.json()).then(d=>{if(!d.settings)return;const values=new Map((d.settings as Setting[]).map(x=>[x.key,String(x.value??"")]));setTitle(values.get("site.title")||"NEXUS");setDescription(values.get("site.description")||"");setBackground(values.get("site.background")||"");setLogo(values.get("site.logo")||"")})},[]);
+ async function save(e:React.FormEvent){e.preventDefault();setMessage("");const entries=[["site.title",title],["site.description",description],["site.background",background],["site.logo",logo]];for(const [key,value] of entries){const r=await fetch("/api/admin/settings",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({key,value})});if(!r.ok){const d=await r.json();setMessage(d.error||"保存失败");return}}setMessage("站点设置已保存。")}
+ return <main className="shell"><header className="topbar glass"><Link className="brand" href="/">NEXUS ✿</Link><Link href="/admin">管理后台</Link></header><section className="write-panel glass"><p className="eyebrow">SITE APPEARANCE</p><h1>站点外观设置</h1><form className="write-form" onSubmit={save}><label>站点标题<input value={title} onChange={e=>setTitle(e.target.value)} maxLength={80}/></label><label>站点简介<textarea value={description} onChange={e=>setDescription(e.target.value)} maxLength={500}/></label><label>背景图片 URL<input value={background} onChange={e=>setBackground(e.target.value)} placeholder="https://…"/></label><label>Logo 图片 URL<input value={logo} onChange={e=>setLogo(e.target.value)} placeholder="https://…"/></label>{message&&<p className="form-message">{message}</p>}<button className="primary-button">保存外观设置</button></form></section></main>
+}
