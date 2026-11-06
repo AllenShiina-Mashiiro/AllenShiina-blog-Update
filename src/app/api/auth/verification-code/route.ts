@@ -23,8 +23,9 @@ export async function POST(request: Request) {
     const port = Number(process.env.SMTP_PORT || 587);
     const transporter = nodemailer.createTransport({ host, port, secure: process.env.SMTP_SECURE === "true", auth: { user, pass } });
     try {
-      await transporter.sendMail({ from, to: email, subject: "NEXUS 注册验证码", text: `你的 NEXUS 注册验证码是：${code}\\n验证码 10 分钟内有效，请勿向他人透露。`, html: `<div style="font-family:Arial,sans-serif"><h2>NEXUS 邮箱验证</h2><p>你的注册验证码：</p><div style="font-size:32px;font-weight:bold;letter-spacing:8px">${code}</div><p>验证码 10 分钟内有效，请勿向他人透露。</p></div>` });
-    } catch (error) {\n      await prisma.emailVerificationCode.delete({ where: { id: record.id } });
+      await transporter.sendMail({ from, to: email, subject: "NEXUS 注册验证码", text: `你的 NEXUS 注册验证码是：${code}\n验证码 10 分钟内有效，请勿向他人透露。`, html: `<div style="font-family:Arial,sans-serif"><h2>NEXUS 邮箱验证</h2><p>你的注册验证码：</p><div style="font-size:32px;font-weight:bold;letter-spacing:8px">${code}</div><p>验证码 10 分钟内有效，请勿向他人透露。</p></div>` });
+    } catch (error) {
+      await prisma.emailVerificationCode.delete({ where: { id: record.id } });
       throw error;
     }
     return NextResponse.json({ ok: true, message: "验证码已发送，请检查邮箱。" });
