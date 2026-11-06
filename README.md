@@ -65,7 +65,7 @@ npm run dev
 
 ## 当前开发阶段
 
-当前提交包含基础首页与液态玻璃样式、原项目完整樱花粒子引擎、Prisma 数据模型和初始 PostgreSQL migration、Docker/Nginx 部署骨架、邮箱验证码注册、密码登录、Google/GitHub OAuth 起始与回调流程。完整内容管理、互动、通知、后台、媒体上传与跨环境验收仍在开发中；此阶段不是最终交付版本。
+开发分支已接入内容管理、互动、通知、用户与内容管理后台、媒体上传、站点外观配置和主题切换。仍需完成 Windows Docker Desktop 与 Ubuntu 虚拟机的实机部署回归，并验证 SMTP、Google/GitHub OAuth 的真实凭据配置；这些环境验收未完成前，不视为最终交付。
 
 
 ## 已接入的功能（开发分支）
