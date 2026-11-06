@@ -24,6 +24,8 @@ try {
   if (!Array.isArray(publicContent.entries)) throw new Error("public content API: entries array missing");
   await check("search page", "/search?q=nexus", 200);
   await check("category page", "/category/article", 200);
+  await check("public site settings", "/api/site-settings", 200);
+  await check("server-side admin page guard", "/admin", 307, { redirect: "manual" });
   await check("unauthenticated content creation", "/api/content", 401, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
