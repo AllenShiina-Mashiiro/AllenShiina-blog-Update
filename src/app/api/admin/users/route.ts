@@ -14,7 +14,7 @@ export async function PATCH(request:Request){
   if(!parsed.success)return NextResponse.json({error:"参数无效。"}, {status:400});
   if(parsed.data.id===actor.id&&parsed.data.isBanned===true)return NextResponse.json({error:"不能封禁当前管理员账号。"}, {status:400});
   const target=await prisma.user.findUnique({where:{id:parsed.data.id},select:{role:true}});if(!target)return NextResponse.json({error:"用户不存在。"}, {status:404});
-  if(target.role==="ADMIN"&&parsed.data.role==="USER"){const admins=await prisma.user.count({where:{role:"ADMIN",isBanned:false}});if(admins<=1)return NextResponse.json({error:"站点至少需要保留一名未封禁管理员。"}, {status:400});}
+  if(target.role==="ADMIN"&&(parsed.data.role==="USER"||parsed.data.isBanned===true)){const admins=await prisma.user.count({where:{role:"ADMIN",isBanned:false}});if(admins<=1)return NextResponse.json({error:"站点至少需要保留一名未封禁管理员。"}, {status:400});}
   const user=await prisma.user.update({where:{id:parsed.data.id},data:{...(parsed.data.role?{role:parsed.data.role}:{}),...(parsed.data.isBanned!==undefined?{isBanned:parsed.data.isBanned}:{})},select:{id:true,username:true,nickname:true,role:true,isBanned:true}});
   return NextResponse.json({user});
 }
