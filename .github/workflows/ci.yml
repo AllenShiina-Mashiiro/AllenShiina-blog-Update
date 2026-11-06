@@ -33,7 +33,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm ci
+      - run: npm install --package-lock=true
       - name: Summarize production dependency advisories
         run: |
           npm audit --omit=dev --json > npm-audit.json || true
