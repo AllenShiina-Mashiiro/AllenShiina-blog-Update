@@ -24,7 +24,7 @@ export async function POST(request:Request){
  const bytes=Buffer.from(await file.arrayBuffer());if(!validImage(bytes,file.type))return NextResponse.json({error:"图片文件内容与格式不匹配。"},{status:415});
  const filename=randomUUID()+"."+extension;const directory=process.env.MEDIA_DIR||"/app/public/uploads";
  await mkdir(directory,{recursive:true});await writeFile(path.join(directory,filename),bytes,{flag:"wx"});
- const url="/uploads/"+filename;
+ const url=new URL("/uploads/"+filename,process.env.APP_URL||request.url).toString();
  const asset=await prisma.mediaAsset.create({data:{url,mimeType:file.type,sizeBytes:file.size,alt:file.name.slice(0,300)}});
  return NextResponse.json({asset},{status:201});
 }
