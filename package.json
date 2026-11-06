@@ -19,7 +19,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "zod": "^4.1.12",
-    "nodemailer": "^7.0.10"
+    "nodemailer": "^7.0.10",
+    "prisma": "^6.19.0"
   },
   "devDependencies": {
     "@types/node": "^22.19.0",
@@ -27,7 +28,6 @@
     "@types/react-dom": "^19.2.0",
     "eslint": "^9.39.0",
     "eslint-config-next": "^15.5.9",
-    "prisma": "^6.19.0",
     "typescript": "^5.9.3",
     "@types/nodemailer": "^6.4.21"
   }
