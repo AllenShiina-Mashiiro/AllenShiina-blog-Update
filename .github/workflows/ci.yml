@@ -33,6 +33,7 @@ jobs:
       - run: npx prisma validate
       - run: npx prisma migrate deploy
       - run: npx prisma generate
+      - run: npm run lint
       - run: npm run typecheck
       - run: npm run build
       - run: docker build -t nexus-blog:ci .
