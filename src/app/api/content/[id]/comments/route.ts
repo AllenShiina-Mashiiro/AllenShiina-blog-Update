@@ -5,6 +5,8 @@ import { getCurrentUser } from "@/lib/session";
 const schema=z.object({body:z.string().trim().min(1).max(5000),parentId:z.string().uuid().optional()});
 export async function GET(_request:Request,{params}:{params:Promise<{id:string}>}){
   const {id}=await params;
+  const entry=await prisma.contentEntry.findFirst({where:{id,status:"PUBLISHED"},select:{id:true}});
+  if(!entry)return NextResponse.json({error:"文章不存在。"},{status:404});
   const comments=await prisma.comment.findMany({where:{entryId:id,parentId:null},orderBy:{createdAt:"asc"},include:{author:{select:{id:true,nickname:true,username:true,avatarUrl:true}},replies:{orderBy:{createdAt:"asc"},include:{author:{select:{id:true,nickname:true,username:true,avatarUrl:true}}}}}});
   return NextResponse.json({comments});
 }
