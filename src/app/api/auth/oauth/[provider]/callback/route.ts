@@ -64,8 +64,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ pro
       const response = NextResponse.redirect(new URL("/account?linked=" + provider, origin));
       response.cookies.delete("nexus_oauth_state");
       response.cookies.delete("nexus_oauth_provider");
-    response.cookies.delete("nexus_oauth_mode");
-    response.cookies.delete("nexus_oauth_user");
       response.cookies.delete("nexus_oauth_mode");
       response.cookies.delete("nexus_oauth_user");
       return response;
