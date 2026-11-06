@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { z } from "zod";
@@ -11,10 +12,10 @@ export async function POST(request: Request) {
     const email = parsed.data.email.trim().toLowerCase();
     const now = new Date();
     const ipCandidate = request.headers.get("x-real-ip")?.trim() || request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() || null;
-    const requestIp = ipCandidate && ipCandidate.length <= 64 ? ipCandidate : null;
-    if (requestIp) {
+    const requestIpHash = ipCandidate && process.env.AUTH_SECRET ? createHmac("sha256", process.env.AUTH_SECRET).update(ipCandidate).digest("hex") : null;
+    if (requestIpHash) {
       const ipSentInHour = await prisma.emailVerificationCode.count({
-        where: { requestIp, purpose: "REGISTER", createdAt: { gt: new Date(now.getTime() - 60 * 60_000) } },
+        where: { requestIpHash, purpose: "REGISTER", createdAt: { gt: new Date(now.getTime() - 60 * 60_000) } },
       });
       if (ipSentInHour >= 20) return NextResponse.json({ error: "当前网络的验证码发送次数已达上限，请稍后再试。" }, { status: 429 });
     }
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
     if (!host || !from || !user || !pass) return NextResponse.json({ error: "邮件服务尚未配置，请先设置 SMTP 环境变量。" }, { status: 503 });
     const code = createVerificationCode();
     const codeHash = hashVerificationCode(email, "REGISTER", code);
-    const record = await prisma.emailVerificationCode.create({ data: { email, codeHash, purpose: "REGISTER", requestIp, expiresAt: new Date(now.getTime() + 10 * 60_000) } });
+    const record = await prisma.emailVerificationCode.create({ data: { email, codeHash, purpose: "REGISTER", requestIpHash, expiresAt: new Date(now.getTime() + 10 * 60_000) } });
     const port = Number(process.env.SMTP_PORT || 587);
     const transporter = nodemailer.createTransport({ host, port, secure: process.env.SMTP_SECURE === "true", auth: { user, pass } });
     try {
