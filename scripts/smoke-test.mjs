@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 
 const base = process.env.SMOKE_BASE_URL || "http://127.0.0.1:3000";
