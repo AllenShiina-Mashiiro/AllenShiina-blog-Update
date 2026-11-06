@@ -44,7 +44,7 @@ async function uniqueHandle(seed: string) {
 export async function GET(request: NextRequest, context: { params: Promise<{ provider: string }> }) {
   const { provider } = await context.params;
   const origin = process.env.APP_URL || request.nextUrl.origin;
-  const fail = (message: string) => NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(message)}`, origin));
+  const fail = (message: string) => { const destination = request.cookies.get("nexus_oauth_mode")?.value === "link" ? "/account" : "/login"; return NextResponse.redirect(new URL(destination + "?error=" + encodeURIComponent(message), origin)); };
   if (provider !== "google" && provider !== "github") return fail("不支持的登录方式");
   const state = request.nextUrl.searchParams.get("state");
   const code = request.nextUrl.searchParams.get("code");
