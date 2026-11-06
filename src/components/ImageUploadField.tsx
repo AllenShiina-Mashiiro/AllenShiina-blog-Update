@@ -90,7 +90,7 @@ export default function ImageUploadField({ onUploaded, cropAspect }: Props) {
             event.currentTarget.value = "";
             setX(50);
             setY(50);
-            if (cropAspect) setPending(file || null);
+            if (cropAspect && file?.type !== "image/gif") setPending(file || null);
             else void upload(file);
           }}
         />
