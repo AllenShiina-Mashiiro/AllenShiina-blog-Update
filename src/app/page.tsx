@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { getCurrentUser } from "@/lib/session";
+
 const sections = [
   { key: "STUDY", title: "学习笔记", description: "记录思考，让知识慢慢生长。" },
   { key: "RESOURCE", title: "资源", description: "收集值得留存的工具与资料。" },
@@ -5,15 +8,16 @@ const sections = [
   { key: "ARTICLE", title: "文章", description: "完整表达与长期写作。" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const viewer = await getCurrentUser();
   return (
     <main className="shell">
       <header className="topbar glass">
         <a className="brand" href="/">NEXUS<span>✿</span></a>
         <nav aria-label="主导航">
-          <a href="#study">学习笔记</a><a href="#resource">资源</a><a href="#life">生活</a><a href="#article">文章</a>
+          <Link href="/category/study">学习笔记</Link><Link href="/category/resource">资源</Link><Link href="/category/life">生活</Link><Link href="/category/article">文章</Link>
         </nav>
-        <a className="login-link" href="/login">登录 / 注册</a>
+        <div className="home-account">{viewer ? <><Link className="login-link" href={`/u/${viewer.username}`}>@{viewer.username}</Link><Link className="login-link" href="/write">写作</Link><Link className="login-link" href="/notifications">通知</Link></> : <Link className="login-link" href="/login">登录 / 注册</Link>}</div>
       </header>
       <section className="hero">
         <p className="eyebrow">PERSONAL SPACE · EST. 2026</p>
