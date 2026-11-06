@@ -39,7 +39,7 @@ export default async function HomePage() {
           </Link>)}
         </div>
       </section>
-      <section className="latest-section"><div className="section-heading"><div><p className="eyebrow">RECENT JOURNAL</p><h2>最近发布</h2></div><Link className="quiet-link" href="/search">浏览全部 ↗</Link></div><div className="entry-list">{latest.map(entry=><Link className="entry-card glass" href={"/entry/"+entry.slug} key={entry.id}><div><h2>{entry.title}</h2><p>{entry.excerpt||"暂无摘要"}</p><small><Link href={"/u/"+entry.author.username}>{entry.author.nickname}</Link> · {entry.category} · {entry.publishedAt?.toLocaleDateString("zh-CN")}</small></div><span>↗</span></Link>)}{!latest.length&&<div className="empty-state glass">还没有公开发布的内容。</div>}</div></section>
+      <section className="latest-section"><div className="section-heading"><div><p className="eyebrow">RECENT JOURNAL</p><h2>最近发布</h2></div><Link className="quiet-link" href="/search">浏览全部 ↗</Link></div><div className="entry-list">{latest.map(entry=><article className="entry-card glass" key={entry.id}><div><Link href={"/entry/"+entry.slug}><h2>{entry.title}</h2></Link><p>{entry.excerpt||"暂无摘要"}</p><small><Link href={"/u/"+entry.author.username}>{entry.author.nickname}</Link> · {entry.category} · {entry.publishedAt?.toLocaleDateString("zh-CN")}</small></div><Link href={"/entry/"+entry.slug} aria-label={"阅读 "+entry.title}>↗</Link></article>)}{!latest.length&&<div className="empty-state glass">还没有公开发布的内容。</div>}</div></section>
       <footer><span>NEXUS</span><span>Made with care · 2026</span></footer>
     </main>
   );
