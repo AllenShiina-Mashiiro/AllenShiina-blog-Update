@@ -13,6 +13,8 @@ export async function PATCH(request:Request){
   const parsed=z.object({id:z.string().uuid(),role:z.enum(["USER","ADMIN"]).optional(),isBanned:z.boolean().optional()}).refine(x=>x.role!==undefined||x.isBanned!==undefined).safeParse(await request.json());
   if(!parsed.success)return NextResponse.json({error:"参数无效。"}, {status:400});
   if(parsed.data.id===actor.id&&parsed.data.isBanned===true)return NextResponse.json({error:"不能封禁当前管理员账号。"}, {status:400});
+  const target=await prisma.user.findUnique({where:{id:parsed.data.id},select:{role:true}});if(!target)return NextResponse.json({error:"用户不存在。"}, {status:404});
+  if(target.role==="ADMIN"&&parsed.data.role==="USER"){const admins=await prisma.user.count({where:{role:"ADMIN",isBanned:false}});if(admins<=1)return NextResponse.json({error:"站点至少需要保留一名未封禁管理员。"}, {status:400});}
   const user=await prisma.user.update({where:{id:parsed.data.id},data:{...(parsed.data.role?{role:parsed.data.role}:{}),...(parsed.data.isBanned!==undefined?{isBanned:parsed.data.isBanned}:{})},select:{id:true,username:true,nickname:true,role:true,isBanned:true}});
   return NextResponse.json({user});
 }
@@ -21,6 +23,8 @@ export async function DELETE(request:Request){
   const parsed=z.object({id:z.string().uuid()}).safeParse(await request.json());
   if(!parsed.success)return NextResponse.json({error:"用户 ID 无效。"}, {status:400});
   if(parsed.data.id===actor.id)return NextResponse.json({error:"不能删除当前登录的管理员账号。"}, {status:400});
+  const target=await prisma.user.findUnique({where:{id:parsed.data.id},select:{role:true}});if(!target)return NextResponse.json({error:"用户不存在。"}, {status:404});
+  if(target.role==="ADMIN"){const admins=await prisma.user.count({where:{role:"ADMIN",isBanned:false}});if(admins<=1)return NextResponse.json({error:"不能删除站点最后一名未封禁管理员。"}, {status:400});}
   await prisma.user.delete({where:{id:parsed.data.id}});
   return NextResponse.json({ok:true});
 }
