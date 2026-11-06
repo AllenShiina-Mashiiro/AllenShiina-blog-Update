@@ -59,7 +59,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ pro
       if (emailOwner) return fail("该邮箱已存在账号。请先使用邮箱登录，再在账号设置中绑定第三方登录。");
       const username = await uniqueHandle(profile.handle || profile.email.split("@")[0]);
       user = await prisma.$transaction(async tx => {
-        const adminEmails=(process.env.ADMIN_EMAILS||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);\n        const created = await tx.user.create({ data: { email: profile.email, emailVerifiedAt: new Date(), username, nickname: profile.name.slice(0, 60), avatarUrl: profile.avatarUrl, role: adminEmails.includes(profile.email) ? "ADMIN" : "USER" } });
+        const adminEmails=(process.env.ADMIN_EMAILS||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
+        const created = await tx.user.create({ data: { email: profile.email, emailVerifiedAt: new Date(), username, nickname: profile.name.slice(0, 60), avatarUrl: profile.avatarUrl, role: adminEmails.includes(profile.email) ? "ADMIN" : "USER" } });
         await tx.oAuthAccount.create({ data: { userId: created.id, provider, providerAccountId: profile.id } });
         return created;
       });

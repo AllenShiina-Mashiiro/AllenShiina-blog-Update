@@ -13,5 +13,5 @@ export default function RegisterPage(){
     <label>密码<input type="password" value={password} onChange={e=>setPassword(e.target.value)} minLength={10} maxLength={128} required placeholder="至少 10 位"/></label>
     <label>邮箱验证码<div className="code-row"><input inputMode="numeric" value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,"").slice(0,6))} pattern="[0-9]{6}" required placeholder="六位验证码"/><button type="button" className="secondary-button" onClick={sendCode} disabled={busy||!email}>发送验证码</button></div></label>
     {message&&<p className="form-message" role="status">{message}</p>}<button className="primary-button auth-submit" disabled={busy}>{busy?"请稍候…":"创建账号"} <span>↗</span></button>
-  </form><div className="oauth-divider"><span>或使用第三方账号注册</span></div><div className="oauth-actions"><a href="/api/auth/oauth/google">使用 Google 继续</a><a href="/api/auth/oauth/github">使用 GitHub 继续</a></div><p className="auth-switch">已经有账号？ <Link href="/login">登录</Link></p></section></main>
+  </form><div className="oauth-divider"><span>或使用第三方账号注册</span></div><div className="oauth-actions"><Link href="/api/auth/oauth/google">使用 Google 继续</Link><Link href="/api/auth/oauth/github">使用 GitHub 继续</Link></div><p className="auth-switch">已经有账号？ <Link href="/login">登录</Link></p></section></main>
 }
