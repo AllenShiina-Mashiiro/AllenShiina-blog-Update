@@ -1,0 +1,37 @@
+name: CI
+on:
+  push:
+    branches: [master, v1.0.1-dev]
+  pull_request:
+    branches: [master]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: nexus
+          POSTGRES_PASSWORD: ci-password
+          POSTGRES_DB: nexus_blog
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U nexus -d nexus_blog"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://nexus:ci-password@localhost:5432/nexus_blog?schema=public
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - run: npx prisma validate
+      - run: npx prisma generate
+      - run: npm run typecheck
+      - run: npm run build

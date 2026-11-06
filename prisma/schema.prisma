@@ -7,11 +7,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {\n  USER\n  ADMIN\n}
-enum ContentCategory {\n  STUDY\n  RESOURCE\n  LIFE\n  ARTICLE\n}
-enum ContentStatus {\n  DRAFT\n  PUBLISHED\n  ARCHIVED\n}
-enum NotificationType {\n  COMMENT\n  REPLY\n  LIKE\n  SYSTEM\n  ANNOUNCEMENT\n}
-enum VerificationPurpose {\n  REGISTER\n  LOGIN\n  EMAIL_CHANGE\n}
+enum UserRole {
+  USER
+  ADMIN
+}
+enum ContentCategory {
+  STUDY
+  RESOURCE
+  LIFE
+  ARTICLE
+}
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+enum NotificationType {
+  COMMENT
+  REPLY
+  LIKE
+  SYSTEM
+  ANNOUNCEMENT
+}
+enum VerificationPurpose {
+  REGISTER
+  LOGIN
+  EMAIL_CHANGE
+}
 
 model User {
   id              String   @id @default(uuid()) @db.Uuid
