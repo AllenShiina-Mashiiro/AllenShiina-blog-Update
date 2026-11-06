@@ -4,7 +4,7 @@ type CommentItem={id:string;body:string;createdAt:string;author:{nickname:string
 export function EntryInteractions({entryId,initialLikes,initialLiked,initialSaved}:{entryId:string;initialLikes:number;initialLiked:boolean;initialSaved:boolean}){
   const[likes,setLikes]=useState(initialLikes);const[liked,setLiked]=useState(initialLiked);const[saved,setSaved]=useState(initialSaved);const[pinned,setPinned]=useState(false);const[comments,setComments]=useState<CommentItem[]>([]);const[body,setBody]=useState("");const[message,setMessage]=useState("");
   const load=useCallback(async()=>{const r=await fetch(`/api/content/${entryId}/comments`);if(r.ok){const d=await r.json();setComments(d.comments)}},[entryId]);
-  useEffect(()=>{void load()},[load]);
+  useEffect(()=>{void load();void fetch(`/api/content/${entryId}/pin`).then(r=>r.json()).then(d=>setPinned(Boolean(d.pinned))).catch(()=>{});},[load,entryId]);
   async function toggle(kind:"reaction"|"bookmark"){const r=await fetch(`/api/content/${entryId}/${kind}`,{method:"POST"});const d=await r.json();if(!r.ok){setMessage(d.error||"请先登录");return}if(kind==="reaction"){setLiked(d.active);setLikes(n=>Math.max(0,n+(d.active?1:-1)))}else setSaved(d.saved)}
   async function pin(){const r=await fetch(`/api/content/${entryId}/pin`,{method:"POST"});const d=await r.json();if(!r.ok){setMessage(d.error||"固定失败");return}setPinned(d.pinned);setMessage(d.pinned?"已固定到个人主页":"已取消固定")}
   async function share(){try{await navigator.clipboard.writeText(window.location.href);setMessage("文章链接已复制")}catch{setMessage("复制失败，请手动复制地址栏链接")}}
