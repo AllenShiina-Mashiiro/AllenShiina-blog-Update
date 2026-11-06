@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { SakuraPetals } from "@/components/SakuraPetals";
+import SakuraPetals from "@/components/SakuraPetals";
 
 export const metadata: Metadata = {
   title: "NEXUS — Personal Archive",
