@@ -43,6 +43,25 @@ npx prisma migrate deploy
 npm run dev
 ```
 
+## Ubuntu VM / Linux 部署
+
+1. 在 Ubuntu 服务器安装 Docker Engine 与 Docker Compose plugin，并安装 Nginx：
+   `sudo apt update && sudo apt install -y nginx`
+2. 克隆仓库并切换开发分支：
+   `git clone https://github.com/AllenShiina-Mashiiro/AllenShiina-blog-Update.git`
+   `cd AllenShiina-blog-Update && git switch v1.0.1-dev`
+3. 复制并配置环境变量：`cp .env.example .env`。设置强随机的数据库密码与至少 32 位 `AUTH_SECRET`，将 `APP_URL` 改为实际 HTTPS 域名。
+4. 启动服务：`docker compose up --build -d`，查看日志：`docker compose logs -f app`。
+5. 将 `nginx/nexus.conf` 复制到 `/etc/nginx/sites-available/nexus`，把 `server_name _;` 改为实际域名，启用配置：
+   ```bash
+   sudo ln -s /etc/nginx/sites-available/nexus /etc/nginx/sites-enabled/nexus
+   sudo nginx -t
+   sudo systemctl reload nginx
+   ```
+6. 将域名 DNS 指向服务器，并配置 HTTPS 证书后再用于正式公网环境。Nginx 代理到 `127.0.0.1:3000`；应用和 PostgreSQL 端口均只绑定本机回环地址，不直接暴露到公网。
+
+数据分别保存在 Docker named volumes `postgres_data` 与 `media_uploads`。更新代码前先备份数据库卷和媒体卷；不要使用 `docker compose down -v` 作为普通更新命令。
+
 ## 邮箱验证码
 
 配置 `SMTP_HOST`、`SMTP_PORT`、`SMTP_USER`、`SMTP_PASSWORD`、`SMTP_FROM`。验证码有效期 10 分钟，哈希存储、单次使用，并限制发送频率与错误次数。注册使用验证码，不发送魔法登录链接。
