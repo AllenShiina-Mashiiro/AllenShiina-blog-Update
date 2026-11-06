@@ -1,10 +1,10 @@
 "use client";
-import { FormEvent,useEffect,useState } from "react";
+import { FormEvent,useCallback,useEffect,useState } from "react";
 type CommentItem={id:string;body:string;createdAt:string;author:{nickname:string;username:string;avatarUrl:string|null};replies?:CommentItem[]};
 export function EntryInteractions({entryId,initialLikes,initialLiked,initialSaved}:{entryId:string;initialLikes:number;initialLiked:boolean;initialSaved:boolean}){
   const[likes,setLikes]=useState(initialLikes);const[liked,setLiked]=useState(initialLiked);const[saved,setSaved]=useState(initialSaved);const[comments,setComments]=useState<CommentItem[]>([]);const[body,setBody]=useState("");const[message,setMessage]=useState("");
-  async function load(){const r=await fetch(`/api/content/${entryId}/comments`);if(r.ok){const d=await r.json();setComments(d.comments)}}
-  useEffect(()=>{void load()},[entryId]);
+  const load=useCallback(async()=>{const r=await fetch(`/api/content/${entryId}/comments`);if(r.ok){const d=await r.json();setComments(d.comments)}},[entryId]);
+  useEffect(()=>{void load()},[load]);
   async function toggle(kind:"reaction"|"bookmark"){const r=await fetch(`/api/content/${entryId}/${kind}`,{method:"POST"});const d=await r.json();if(!r.ok){setMessage(d.error||"请先登录");return}if(kind==="reaction"){setLiked(d.active);setLikes(n=>Math.max(0,n+(d.active?1:-1)))}else setSaved(d.saved)}
   async function submit(e:FormEvent){e.preventDefault();const r=await fetch(`/api/content/${entryId}/comments`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({body})});const d=await r.json();if(!r.ok){setMessage(d.error||"评论失败");return}setBody("");setMessage("评论已发布");await load()}
   return <section className="entry-interactions"><div className="interaction-actions"><button type="button" className={liked?"active":""} onClick={()=>toggle("reaction")}>♡ 喜欢 · {likes}</button><button type="button" className={saved?"active":""} onClick={()=>toggle("bookmark")}>{saved?"已收藏":"收藏文章"}</button></div><h2>留言与讨论</h2><form className="comment-form" onSubmit={submit}><textarea value={body} onChange={e=>setBody(e.target.value)} maxLength={5000} placeholder="写下你的想法…" required/><button className="primary-button" type="submit">发布评论</button></form>{message&&<p className="form-message">{message}</p>}<div className="comment-list">{comments.map(c=><div className="comment-item" key={c.id}><strong>{c.author.nickname} <small>@{c.author.username}</small></strong><p>{c.body}</p><time>{new Date(c.createdAt).toLocaleString("zh-CN")}</time>{c.replies?.map(reply=><div className="comment-reply" key={reply.id}><strong>{reply.author.nickname}</strong><p>{reply.body}</p></div>)}</div>)}</div></section>
