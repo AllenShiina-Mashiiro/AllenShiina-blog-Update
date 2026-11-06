@@ -1,2 +1,2 @@
-ALTER TABLE "EmailVerificationCode" ADD COLUMN "requestIp" VARCHAR(64);
-CREATE INDEX "EmailVerificationCode_requestIp_purpose_createdAt_idx" ON "EmailVerificationCode"("requestIp", "purpose", "createdAt");
+ALTER TABLE "EmailVerificationCode" ADD COLUMN "requestIpHash" VARCHAR(64);
+CREATE INDEX "EmailVerificationCode_requestIpHash_purpose_createdAt_idx" ON "EmailVerificationCode"("requestIp", "purpose", "createdAt");
