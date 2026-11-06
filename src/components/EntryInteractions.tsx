@@ -1,8 +1,8 @@
 "use client";
 import { FormEvent,useEffect,useState } from "react";
 type CommentItem={id:string;body:string;createdAt:string;author:{nickname:string;username:string;avatarUrl:string|null};replies?:CommentItem[]};
-export function EntryInteractions({entryId,initialLikes,initialSaved}:{entryId:string;initialLikes:number;initialSaved:boolean}){
-  const[likes,setLikes]=useState(initialLikes);const[liked,setLiked]=useState(false);const[saved,setSaved]=useState(initialSaved);const[comments,setComments]=useState<CommentItem[]>([]);const[body,setBody]=useState("");const[message,setMessage]=useState("");
+export function EntryInteractions({entryId,initialLikes,initialLiked,initialSaved}:{entryId:string;initialLikes:number;initialLiked:boolean;initialSaved:boolean}){
+  const[likes,setLikes]=useState(initialLikes);const[liked,setLiked]=useState(initialLiked);const[saved,setSaved]=useState(initialSaved);const[comments,setComments]=useState<CommentItem[]>([]);const[body,setBody]=useState("");const[message,setMessage]=useState("");
   async function load(){const r=await fetch(`/api/content/${entryId}/comments`);if(r.ok){const d=await r.json();setComments(d.comments)}}
   useEffect(()=>{void load()},[entryId]);
   async function toggle(kind:"reaction"|"bookmark"){const r=await fetch(`/api/content/${entryId}/${kind}`,{method:"POST"});const d=await r.json();if(!r.ok){setMessage(d.error||"请先登录");return}if(kind==="reaction"){setLiked(d.active);setLikes(n=>Math.max(0,n+(d.active?1:-1)))}else setSaved(d.saved)}
