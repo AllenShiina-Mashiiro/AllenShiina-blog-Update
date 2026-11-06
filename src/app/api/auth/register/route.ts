@@ -24,7 +24,8 @@ export async function POST(request: Request) {
       }
       await tx.emailVerificationCode.update({ where: { id: record.id }, data: { consumedAt: new Date() } });
       const passwordHash = await hashPassword(password);
-      const user = await tx.user.create({ data: { nickname, email, username, passwordHash, emailVerifiedAt: new Date() }, select: { id: true, nickname: true, username: true, email: true } });
+      const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(x => x.trim().toLowerCase()).filter(Boolean);
+      const user = await tx.user.create({ data: { nickname, email, username, passwordHash, emailVerifiedAt: new Date(), role: adminEmails.includes(email) ? "ADMIN" : "USER" }, select: { id: true, nickname: true, username: true, email: true } });
       return { user };
     }, { isolationLevel: "Serializable" });
     if ("error" in result) return NextResponse.json({ error: result.error }, { status: 400 });
