@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createUserSession } from "@/lib/session";
+import { createUserSession, getCurrentUser } from "@/lib/session";
 import { normalizeHandle } from "@/lib/handles";
 
 type OAuthProfile = { id: string; email: string; name: string; avatarUrl: string | null; handle: string };
@@ -53,10 +53,27 @@ export async function GET(request: NextRequest, context: { params: Promise<{ pro
   try {
     const profile = provider === "google" ? await getGoogleProfile(code, callback) : await getGithubProfile(code, callback);
     const existingAccount = await prisma.oAuthAccount.findUnique({ where: { provider_providerAccountId: { provider, providerAccountId: profile.id } }, include: { user: true } });
+    const mode = request.cookies.get("nexus_oauth_mode")?.value || "login";
+    if (mode === "link") {
+      const currentUser = await getCurrentUser();
+      const intendedUserId = request.cookies.get("nexus_oauth_user")?.value;
+      if (!currentUser || currentUser.id !== intendedUserId) return fail("登录状态已失效，请重新登录后绑定。");
+      if (existingAccount && existingAccount.userId !== currentUser.id) return fail("这个第三方账号已经绑定到其他用户。");
+      if (existingAccount) return fail("这个第三方账号已经绑定到当前账号。");
+      await prisma.oAuthAccount.create({ data: { userId: currentUser.id, provider, providerAccountId: profile.id } });
+      const response = NextResponse.redirect(new URL("/account?linked=" + provider, origin));
+      response.cookies.delete("nexus_oauth_state");
+      response.cookies.delete("nexus_oauth_provider");
+    response.cookies.delete("nexus_oauth_mode");
+    response.cookies.delete("nexus_oauth_user");
+      response.cookies.delete("nexus_oauth_mode");
+      response.cookies.delete("nexus_oauth_user");
+      return response;
+    }
     let user = existingAccount?.user;
     if (!user) {
       const emailOwner = await prisma.user.findUnique({ where: { email: profile.email }, select: { id: true } });
-      if (emailOwner) return fail("该邮箱已存在账号。请先使用邮箱登录，再在账号设置中绑定第三方登录。");
+      if (emailOwner) return fail("该邮箱已存在账号，请使用原登录方式进入账号。");
       const username = await uniqueHandle(profile.handle || profile.email.split("@")[0]);
       user = await prisma.$transaction(async tx => {
         const adminEmails=(process.env.ADMIN_EMAILS||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
