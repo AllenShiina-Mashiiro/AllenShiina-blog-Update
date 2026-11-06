@@ -10,6 +10,14 @@ export async function POST(request: Request) {
     if (!parsed.success) return NextResponse.json({ error: "请输入有效邮箱地址。" }, { status: 400 });
     const email = parsed.data.email.trim().toLowerCase();
     const now = new Date();
+    const ipCandidate = request.headers.get("x-real-ip")?.trim() || request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() || null;
+    const requestIp = ipCandidate && ipCandidate.length <= 64 ? ipCandidate : null;
+    if (requestIp) {
+      const ipSentInHour = await prisma.emailVerificationCode.count({
+        where: { requestIp, purpose: "REGISTER", createdAt: { gt: new Date(now.getTime() - 60 * 60_000) } },
+      });
+      if (ipSentInHour >= 20) return NextResponse.json({ error: "当前网络的验证码发送次数已达上限，请稍后再试。" }, { status: 429 });
+    }
     const recent = await prisma.emailVerificationCode.findFirst({ where: { email, purpose: "REGISTER", createdAt: { gt: new Date(now.getTime() - 60_000) } } });
     if (recent) return NextResponse.json({ error: "验证码发送过于频繁，请稍后再试。" }, { status: 429 });
     const sentInHour = await prisma.emailVerificationCode.count({ where: { email, purpose: "REGISTER", createdAt: { gt: new Date(now.getTime() - 60 * 60_000) } } });
@@ -19,7 +27,7 @@ export async function POST(request: Request) {
     if (!host || !from || !user || !pass) return NextResponse.json({ error: "邮件服务尚未配置，请先设置 SMTP 环境变量。" }, { status: 503 });
     const code = createVerificationCode();
     const codeHash = hashVerificationCode(email, "REGISTER", code);
-    const record = await prisma.emailVerificationCode.create({ data: { email, codeHash, purpose: "REGISTER", expiresAt: new Date(now.getTime() + 10 * 60_000) } });
+    const record = await prisma.emailVerificationCode.create({ data: { email, codeHash, purpose: "REGISTER", requestIp, expiresAt: new Date(now.getTime() + 10 * 60_000) } });
     const port = Number(process.env.SMTP_PORT || 587);
     const transporter = nodemailer.createTransport({ host, port, secure: process.env.SMTP_SECURE === "true", auth: { user, pass } });
     try {
