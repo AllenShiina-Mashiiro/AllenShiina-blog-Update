@@ -35,7 +35,7 @@
 
 ## 可选：本机 Next.js 开发模式
 
-先启动数据库：`docker compose up -d db`。然后把本机 `.env` 中的 `DATABASE_URL` 主机改为 `localhost`，端口为 `5432`，执行：
+先启动数据库：`docker compose up -d db`。然后把本机 `.env` 中的 `DATABASE_URL` 主机改为 `localhost`，端口为 `5433`，执行：
 
 ```powershell
 npm install
