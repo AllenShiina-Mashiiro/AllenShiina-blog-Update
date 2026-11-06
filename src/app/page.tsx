@@ -18,7 +18,7 @@ export default async function HomePage() {
         <nav aria-label="主导航">
           <Link href="/category/study">学习笔记</Link><Link href="/category/resource">资源</Link><Link href="/category/life">生活</Link><Link href="/category/article">文章</Link>
         </nav>
-        <div className="home-account"><Link className="login-link" href="/search">搜索</Link>{viewer ? <><Link className="login-link" href={`/u/${viewer.username}`}>@{viewer.username}</Link><Link className="login-link" href="/account">资料</Link><Link className="login-link" href="/write">写作</Link><Link className="login-link" href="/notifications">通知</Link>{viewer.role === "ADMIN" && <Link className="login-link" href="/admin">管理</Link>}</> : <Link className="login-link" href="/login">登录 / 注册</Link>}</div>
+        <div className="home-account"><Link className="login-link" href="/search">搜索</Link><Link className="login-link" href="/members">成员</Link>{viewer ? <><Link className="login-link" href={`/u/${viewer.username}`}>@{viewer.username}</Link><Link className="login-link" href="/account">资料</Link><Link className="login-link" href="/bookmarks">收藏</Link><Link className="login-link" href="/write">写作</Link><Link className="login-link" href="/notifications">通知</Link>{viewer.role === "ADMIN" && <Link className="login-link" href="/admin">管理</Link>}</> : <Link className="login-link" href="/login">登录 / 注册</Link>}</div>
       </header>
       {announcements.length > 0 && <section className="home-announcements">{announcements.map(item => <article className="glass" key={item.id}><strong>{item.title}</strong><p>{item.body}</p><small>{item.createdAt.toLocaleDateString("zh-CN")}</small></article>)}</section>}
       <section className="hero">
