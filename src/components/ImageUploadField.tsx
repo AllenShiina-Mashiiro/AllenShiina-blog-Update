@@ -80,7 +80,7 @@ export default function ImageUploadField({ onUploaded, cropAspect }: Props) {
   return (
     <div className="image-upload-field">
       <label>
-        选择图片（最大 20MB）
+        选择图片（最大 20MB；PNG/WebP 保留透明背景，GIF 保留动画但不裁剪）
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
