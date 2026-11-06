@@ -49,6 +49,7 @@ try {
     select: { id: true, username: true },
   });
   const smokeSettingKey = "smoke." + suffix;
+  let smokeMediaId;
   try {
     const token = randomBytes(32).toString("base64url");
     await prisma.session.create({
@@ -71,6 +72,12 @@ try {
       body: JSON.stringify({ entries: [{ key: smokeSettingKey, value: "ok" }] }),
     });
     if (!settings.settings?.some((item) => item.key === smokeSettingKey)) throw new Error("batch site settings API: setting was not saved");
+    const imageBytes = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/f9sAAAAASUVORK5CYII=", "base64");
+    const imageForm = new FormData();
+    imageForm.set("file", new Blob([imageBytes], { type: "image/png" }), "smoke.png");
+    const media = await checkJson("authenticated image upload", "/api/media", 201, { method: "POST", headers: { Cookie: "nexus_session=" + token }, body: imageForm });
+    if (!media.asset?.url || !media.asset?.id) throw new Error("authenticated image upload: asset metadata missing");
+    smokeMediaId = media.asset.id;
 
     const created = await checkJson("create published content", "/api/content", 201, {
       method: "POST",
@@ -118,10 +125,11 @@ try {
     if (!deleted.ok) throw new Error("delete content: deletion failed");
   } finally {
     await prisma.siteSetting.deleteMany({ where: { key: smokeSettingKey } }).catch(() => {});
+    if (smokeMediaId) await prisma.mediaAsset.deleteMany({ where: { id: smokeMediaId } }).catch(() => {});
     await prisma.user.delete({ where: { id: user.id } }).catch(() => {});
   }
 
-  console.log("Smoke tests passed: public pages, PostgreSQL, auth, content CRUD, profiles, admin moderation, batch settings, likes, bookmarks, pins, comments and protected APIs.");
+  console.log("Smoke tests passed: public pages, PostgreSQL, auth, content CRUD, profiles, admin moderation, batch settings, image upload, likes, bookmarks, pins, comments and protected APIs.");
 } finally {
   await prisma.$disconnect();
 }
