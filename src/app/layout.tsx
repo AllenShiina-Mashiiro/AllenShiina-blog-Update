@@ -28,7 +28,8 @@ export default async function RootLayout({
     prisma.siteSetting.findUnique({ where: { key: "site.accentColor" }, select: { value: true } }),
     prisma.siteSetting.findUnique({ where: { key: "site.defaultTheme" }, select: { value: true } }),
   ]);
-  const backgroundUrl = typeof background?.value === "string" ? background.value : "";\n  const backgroundSecondaryUrl = typeof backgroundSecondary?.value === "string" ? backgroundSecondary.value : "";
+  const backgroundUrl = typeof background?.value === "string" ? background.value : "";
+  const backgroundSecondaryUrl = typeof backgroundSecondary?.value === "string" ? backgroundSecondary.value : "";
   const logoUrl = typeof logo?.value === "string" ? logo.value : "";
   const opacityNumber = typeof opacity?.value === "string" ? Number(opacity.value) : 22;
   const opacityValue = Math.min(100, Math.max(0, Number.isFinite(opacityNumber) ? opacityNumber : 22)) / 100;
@@ -43,13 +44,15 @@ export default async function RootLayout({
       <body
         style={
           {
-            ...(backgroundUrl ? { "--site-background": "url(" + backgroundUrl + ")" } : {}),\n            ...(backgroundSecondaryUrl ? { "--site-background-secondary": "url(" + backgroundSecondaryUrl + ")" } : {}),
+            ...(backgroundUrl ? { "--site-background": "url(" + backgroundUrl + ")" } : {}),
+            ...(backgroundSecondaryUrl ? { "--site-background-secondary": "url(" + backgroundSecondaryUrl + ")" } : {}),
             ...(logoUrl ? { "--site-logo": "url(" + logoUrl + ")" } : {}),
             "--site-background-opacity": String(opacityValue),
             "--rose": accentValue,
           } as React.CSSProperties
         }
       >
+        <div className="site-background-secondary" aria-hidden="true" />
         <SakuraPetals />
         <ThemeToggle defaultAccent={accentValue} defaultTheme={defaultTheme} />
         {children}
