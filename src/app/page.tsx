@@ -1,0 +1,35 @@
+const sections = [
+  { key: "STUDY", title: "学习笔记", description: "记录思考，让知识慢慢生长。" },
+  { key: "RESOURCE", title: "资源", description: "收集值得留存的工具与资料。" },
+  { key: "LIFE", title: "生活", description: "日常片段与灵感存档。" },
+  { key: "ARTICLE", title: "文章", description: "完整表达与长期写作。" },
+];
+
+export default function HomePage() {
+  return (
+    <main className="shell">
+      <header className="topbar glass">
+        <a className="brand" href="/">NEXUS<span>✿</span></a>
+        <nav aria-label="主导航">
+          <a href="#study">学习笔记</a><a href="#resource">资源</a><a href="#life">生活</a><a href="#article">文章</a>
+        </nav>
+        <a className="login-link" href="/login">登录 / 注册</a>
+      </header>
+      <section className="hero">
+        <p className="eyebrow">PERSONAL SPACE · EST. 2026</p>
+        <h1>把喜欢的事物，<br/><em>认真地收藏起来。</em></h1>
+        <p className="hero-copy">一个关于学习、资源、生活与创作的个人空间。</p>
+        <div className="hero-actions"><a className="primary-button" href="#archive">探索归档 <span>↗</span></a><a className="quiet-link" href="/about">关于 NEXUS</a></div>
+      </section>
+      <section id="archive" className="archive">
+        <div className="section-heading"><div><p className="eyebrow">THE ARCHIVE</p><h2>内容空间</h2></div><span>01 — 04</span></div>
+        <div className="section-grid">
+          {sections.map((section, index) => <a className="section-card glass" id={section.key.toLowerCase()} href={`/category/${section.key.toLowerCase()}`} key={section.key}>
+            <span className="card-index">0{index + 1}</span><span className="card-flower">✿</span><h3>{section.title}</h3><p>{section.description}</p><span className="card-arrow">↗</span>
+          </a>)}
+        </div>
+      </section>
+      <footer><span>NEXUS</span><span>Made with care · 2026</span></footer>
+    </main>
+  );
+}

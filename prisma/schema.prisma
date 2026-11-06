@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole { USER ADMIN }
+enum ContentCategory { STUDY RESOURCE LIFE ARTICLE }
+enum ContentStatus { DRAFT PUBLISHED ARCHIVED }
+enum NotificationType { COMMENT REPLY LIKE SYSTEM ANNOUNCEMENT }
+enum VerificationPurpose { REGISTER LOGIN EMAIL_CHANGE }
+
+model User {
+  id              String   @id @default(uuid()) @db.Uuid
+  email           String   @unique @db.VarChar(320)
+  emailVerifiedAt DateTime?
+  username        String   @unique @db.VarChar(30)
+  nickname        String   @db.VarChar(60)
+  passwordHash    String?
+  avatarUrl       String?
+  coverUrl        String?
+  bio             String?  @db.VarChar(500)
+  role            UserRole @default(USER)
+  isBanned        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  entries         ContentEntry[]
+  comments        Comment[]
+  reactions       Reaction[]
+  bookmarks       Bookmark[]
+  notifications  Notification[] @relation("NotificationRecipient")
+  sentNotifications Notification[] @relation("NotificationActor")
+  pins            ContentPin[]
+  accounts        OAuthAccount[]
+  sessions        Session[]
+  @@index([createdAt])
+}
+
+model OAuthAccount {
+  id                String @id @default(uuid()) @db.Uuid
+  userId            String @db.Uuid
+  provider          String @db.VarChar(30)
+  providerAccountId String @db.VarChar(191)
+  createdAt         DateTime @default(now())
+  user              User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String @id @default(uuid()) @db.Uuid
+  userId       String @db.Uuid
+  sessionToken String @unique
+  expiresAt    DateTime
+  user         User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  @@index([userId])
+}
+
+model EmailVerificationCode {
+  id        String @id @default(uuid()) @db.Uuid
+  email     String @db.VarChar(320)
+  codeHash  String @db.VarChar(128)
+  purpose   VerificationPurpose
+  expiresAt DateTime
+  consumedAt DateTime?
+  attempts  Int @default(0)
+  createdAt DateTime @default(now())
+  @@index([email, purpose, createdAt])
+  @@index([expiresAt])
+}
+
+model ContentEntry {
+  id          String @id @default(uuid()) @db.Uuid
+  authorId    String @db.Uuid
+  title       String @db.VarChar(200)
+  slug        String @unique @db.VarChar(220)
+  excerpt     String? @db.VarChar(500)
+  body        String @db.Text
+  coverUrl    String?
+  category    ContentCategory
+  status      ContentStatus @default(DRAFT)
+  viewCount   Int @default(0)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  author      User @relation(fields:[authorId], references:[id], onDelete:Cascade)
+  comments    Comment[]
+  reactions   Reaction[]
+  bookmarks   Bookmark[]
+  pins        ContentPin[]
+  media       MediaAsset[]
+  @@index([category, status, publishedAt])
+  @@index([authorId, createdAt])
+}
+
+model Comment {
+  id        String @id @default(uuid()) @db.Uuid
+  entryId   String @db.Uuid
+  authorId  String @db.Uuid
+  parentId  String? @db.Uuid
+  body      String @db.VarChar(5000)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  entry     ContentEntry @relation(fields:[entryId], references:[id], onDelete:Cascade)
+  author    User @relation(fields:[authorId], references:[id], onDelete:Cascade)
+  parent    Comment? @relation("CommentReplies", fields:[parentId], references:[id], onDelete:Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  @@index([entryId, createdAt])
+  @@index([parentId])
+}
+
+model Reaction {
+  id        String @id @default(uuid()) @db.Uuid
+  entryId   String @db.Uuid
+  userId    String @db.Uuid
+  createdAt DateTime @default(now())
+  entry     ContentEntry @relation(fields:[entryId], references:[id], onDelete:Cascade)
+  user      User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  @@unique([entryId, userId])
+}
+
+model Bookmark {
+  id        String @id @default(uuid()) @db.Uuid
+  entryId   String @db.Uuid
+  userId    String @db.Uuid
+  createdAt DateTime @default(now())
+  entry     ContentEntry @relation(fields:[entryId], references:[id], onDelete:Cascade)
+  user      User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  @@unique([entryId, userId])
+}
+
+model ContentPin {
+  id        String @id @default(uuid()) @db.Uuid
+  entryId   String @db.Uuid
+  userId    String @db.Uuid
+  position  Int @default(0)
+  createdAt DateTime @default(now())
+  entry     ContentEntry @relation(fields:[entryId], references:[id], onDelete:Cascade)
+  user      User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  @@unique([entryId, userId])
+  @@index([userId, position])
+}
+
+model Notification {
+  id          String @id @default(uuid()) @db.Uuid
+  recipientId String @db.Uuid
+  actorId     String? @db.Uuid
+  type        NotificationType
+  title       String @db.VarChar(160)
+  body        String? @db.VarChar(500)
+  targetUrl   String?
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+  recipient  User @relation("NotificationRecipient", fields:[recipientId], references:[id], onDelete:Cascade)
+  actor      User? @relation("NotificationActor", fields:[actorId], references:[id], onDelete:SetNull)
+  @@index([recipientId, readAt, createdAt])
+}
+
+model Announcement {
+  id        String @id @default(uuid()) @db.Uuid
+  title     String @db.VarChar(200)
+  body      String @db.Text
+  isActive  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([isActive, createdAt])
+}
+
+model SiteSetting {
+  key       String @id @db.VarChar(100)
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model MediaAsset {
+  id        String @id @default(uuid()) @db.Uuid
+  entryId   String? @db.Uuid
+  url       String
+  mimeType  String? @db.VarChar(120)
+  sizeBytes Int?
+  alt       String? @db.VarChar(300)
+  createdAt DateTime @default(now())
+  entry     ContentEntry? @relation(fields:[entryId], references:[id], onDelete:Cascade)
+  @@index([entryId, createdAt])
+}
+
+model PageView {
+  id        String @id @default(uuid()) @db.Uuid
+  path      String @db.VarChar(500)
+  createdAt DateTime @default(now())
+  @@index([path, createdAt])
+}
