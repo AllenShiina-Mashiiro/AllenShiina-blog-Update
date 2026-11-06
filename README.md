@@ -66,3 +66,23 @@ npm run dev
 ## 当前开发阶段
 
 当前提交包含基础首页与液态玻璃样式、原项目完整樱花粒子引擎、Prisma 数据模型和初始 PostgreSQL migration、Docker/Nginx 部署骨架、邮箱验证码注册、密码登录、Google/GitHub OAuth 起始与回调流程。完整内容管理、互动、通知、后台、媒体上传与跨环境验收仍在开发中；此阶段不是最终交付版本。
+
+
+## 已接入的功能（开发分支）
+
+- 邮箱验证码注册、密码登录、Google / GitHub OAuth 登录；用户公开 ID 使用小写字母、数字和下划线。
+- 学习笔记、资源、生活、文章四类内容；草稿、发布、归档，作者/管理员编辑与删除。
+- Markdown / GFM 渲染、代码高亮、文章封面与正文图片上传（单张最大 20MB，限制为常见图片格式）。
+- 点赞、收藏、个人主页置顶、评论与回复、分享链接、阅读量。
+- 个人资料编辑、公开个人主页、成员搜索目录、我的收藏、通知中心。
+- 管理后台：用户角色、封禁与删除，公告发布/隐藏/删除，站点标题、简介、背景图、Logo 与背景透明度设置。
+- 深浅色切换；原项目完整 SakuraPetals 粒子效果保留。
+- 上传图片存放在 Docker named volume `media_uploads`；数据库存放在 `postgres_data`。两者都不会因普通容器重建而自动清空。
+
+## 图片上传与持久化
+
+图片上传需要已登录账号。API 会校验 MIME 类型与文件签名，限制 20MB，并使用随机文件名。Docker Compose 会将 `/app/public/uploads` 挂载到 `media_uploads` 持久卷。线上部署请把 `APP_URL` 设置为真实 HTTPS 域名，避免生成错误的绝对图片地址。
+
+## 当前验收边界
+
+GitHub Actions 会检查 Prisma schema / migration、ESLint、TypeScript、Next.js production build 和 Docker image build。CI 通过不等于已在你的 Windows Docker Desktop 或 Ubuntu 虚拟机上完成实机部署；这两步仍需在你的机器上按上面的步骤运行并回归。开发期间不要把 `v1.0.1-dev` 合并到 `master`，直到本地部署、OAuth/SMTP 配置和主要功能验收完成。
