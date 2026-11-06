@@ -89,10 +89,10 @@ model EmailVerificationCode {
   expiresAt DateTime
   consumedAt DateTime?
   attempts  Int @default(0)
-  requestIp String? @db.VarChar(64)
+  requestIpHash String? @db.VarChar(64)
   createdAt DateTime @default(now())
   @@index([email, purpose, createdAt])
-  @@index([requestIp, purpose, createdAt])
+  @@index([requestIpHash, purpose, createdAt])
   @@index([expiresAt])
 }
 
