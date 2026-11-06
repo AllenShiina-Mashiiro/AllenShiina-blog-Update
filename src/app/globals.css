@@ -24,7 +24,7 @@ body{isolation:isolate}body::before{content:"";position:fixed;inset:0;z-index:0;
 
 .member-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:28px}.member-card{display:flex;align-items:center;gap:14px;padding:18px;border-radius:16px;min-width:0}.member-card img,.member-avatar{width:52px;height:52px;flex:none;border-radius:50%;object-fit:cover}.member-avatar{display:grid;place-items:center;background:rgba(232,190,207,.16);color:var(--rose);font-size:20px}.member-card strong,.member-card small{display:block}.member-card strong{font-size:13px}.member-card small{font-size:10px;color:var(--muted);margin-top:4px}.member-card p{font-size:11px;color:var(--muted);margin:7px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:330px}
 
-body[style*="--site-logo"] .brand span{display:inline-block;width:22px;height:22px;vertical-align:middle;background-image:var(--site-logo);background-size:contain;background-position:center;background-repeat:no-repeat;color:transparent}
+body[style*="--site-logo"] .brand span{display:inline-block;width:22px;height:22px;vertical-align:middle;background-image:var(--site-logo);background-size:contain;background-position:center;background-repeat:no-repeat;border-radius:50%;color:transparent}
 
 .reply-trigger{border:0;background:transparent;color:var(--rose);font-size:11px;cursor:pointer;margin-left:12px}.reply-form{margin:12px 0 16px 18px;max-width:620px}.reply-form textarea{min-height:72px}
 
