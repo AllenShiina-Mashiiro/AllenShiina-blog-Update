@@ -38,7 +38,7 @@ export default async function RootLayout({
   const defaultTheme = theme?.value === "light" ? "light" : "dark";
 
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" data-theme={defaultTheme}>
       <body
         style={
           {
