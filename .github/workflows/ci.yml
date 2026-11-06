@@ -1,7 +1,7 @@
 name: CI
 
 concurrency:
-  group: nexus-ci-${{ github.ref }}
+  group: nexus-ci-${{ github.ref }}-${{ github.run_id }}
   cancel-in-progress: true
 on:
   push:
