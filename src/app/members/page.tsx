@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 export default async function MembersPage({searchParams}:{searchParams:Promise<{q?:string}>}){
- const {q=""}=await searchParams;const query=q.trim().slice(0,60);
+ const {q=""}=await searchParams;const query=q.trim().replace(/^@/,"").slice(0,60);
  const users=await prisma.user.findMany({where:{isBanned:false,...(query?{OR:[{username:{contains:query,mode:"insensitive"}},{nickname:{contains:query,mode:"insensitive"}}]}:{})},orderBy:{createdAt:"desc"},take:60,select:{username:true,nickname:true,bio:true,avatarUrl:true,createdAt:true,_count:{select:{entries:{where:{status:"PUBLISHED"}}}}}});
  return <main className="shell"><header className="topbar glass"><Link className="brand" href="/">NEXUS<span>✿</span></Link><Link href="/">首页</Link></header><section className="archive-page glass"><p className="eyebrow">COMMUNITY</p><h1>成员</h1><form action="/members" className="search-form"><input name="q" defaultValue={query} placeholder="搜索昵称或用户 ID…" maxLength={60}/><button className="primary-button">搜索</button></form><div className="member-grid">{users.map(u=><Link className="member-card glass" href={"/u/"+u.username} key={u.username}>{u.avatarUrl?<img src={u.avatarUrl} alt=""/>:<span className="member-avatar">{u.nickname.slice(0,1)}</span>}<div><strong>{u.nickname}</strong><small>@{u.username}</small><p>{u.bio||"这个人很神秘。"}</p><small>{u._count.entries} 篇公开内容</small></div></Link>)}{!users.length&&<div className="empty-state">没有找到成员。</div>}</div></section></main>
 }
