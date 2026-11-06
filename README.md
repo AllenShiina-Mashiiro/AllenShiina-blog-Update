@@ -23,7 +23,7 @@
    ```powershell
    Copy-Item .env.example .env
    ```
-   将 `POSTGRES_PASSWORD` 换成强密码；`DATABASE_URL` 中的密码也要同步修改。设置至少 32 位随机 `AUTH_SECRET`。
+   将 `POSTGRES_PASSWORD` 换成强密码；`DATABASE_URL` 中的密码也要同步修改。设置至少 32 位随机 `AUTH_SECRET`，并将 `ADMIN_EMAILS` 改成你准备作为站点管理员的邮箱（首次注册时会自动授予管理员权限）。
 4. 启动：
    ```powershell
    docker compose up --build -d
