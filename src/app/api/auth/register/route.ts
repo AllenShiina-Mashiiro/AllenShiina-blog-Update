@@ -15,17 +15,20 @@ export async function POST(request: Request) {
     const username = normalizeHandle(parsed.data.username);
     if (!isValidHandle(username)) return NextResponse.json({ error: "ID 仅支持 3–30 位小写英文字母、数字和下划线，不需要输入 @。" }, { status: 400 });
     const codeHash = hashVerificationCode(email, "REGISTER", code);
-    const user = await prisma.$transaction(async tx => {
+    const result = await prisma.$transaction(async tx => {
       const record = await tx.emailVerificationCode.findFirst({ where: { email, purpose: "REGISTER", consumedAt: null, expiresAt: { gt: new Date() } }, orderBy: { createdAt: "desc" } });
-      if (!record || record.attempts >= 5) throw new Error("验证码无效或已过期，请重新获取。");
+      if (!record || record.attempts >= 5) return { error: "验证码无效或已过期，请重新获取。" as const };
       if (record.codeHash !== codeHash) {
         await tx.emailVerificationCode.update({ where: { id: record.id }, data: { attempts: { increment: 1 } } });
-        throw new Error("验证码错误，请重新输入。");
+        return { error: "验证码错误，请重新输入。" as const };
       }
       await tx.emailVerificationCode.update({ where: { id: record.id }, data: { consumedAt: new Date() } });
       const passwordHash = await hashPassword(password);
-      return tx.user.create({ data: { nickname, email, username, passwordHash, emailVerifiedAt: new Date() }, select: { id: true, nickname: true, username: true, email: true } });
+      const user = await tx.user.create({ data: { nickname, email, username, passwordHash, emailVerifiedAt: new Date() }, select: { id: true, nickname: true, username: true, email: true } });
+      return { user };
     }, { isolationLevel: "Serializable" });
+    if ("error" in result) return NextResponse.json({ error: result.error }, { status: 400 });
+    const user = result.user;
     await createUserSession(user.id);
     return NextResponse.json({ ok: true, user: { ...user, username: `@${user.username}` } }, { status: 201 });
   } catch (error) {
