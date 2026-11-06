@@ -104,4 +104,4 @@ npm run dev
 
 ## 当前验收边界
 
-GitHub Actions 会检查 Prisma schema / migration、ESLint、TypeScript、Next.js production build 和 Docker image build。CI 通过不等于已在你的 Windows Docker Desktop 或 Ubuntu 虚拟机上完成实机部署；这两步仍需在你的机器上按上面的步骤运行并回归。开发期间不要把 `v1.0.1-dev` 合并到 `master`，直到本地部署、OAuth/SMTP 配置和主要功能验收完成。
+GitHub Actions 会检查 Prisma schema / migration、ESLint、TypeScript、Next.js production build、Docker image build，以及 Docker Compose 实际启动、PostgreSQL 健康状态、公开页面、登录态内容 CRUD/互动、管理员设置批量保存和 API 权限边界。CI 通过不等于已在你的 Windows Docker Desktop 或 Ubuntu 虚拟机上完成实机部署；这两步仍需在你的机器上按上面的步骤运行并回归。开发期间不要把 `v1.0.1-dev` 合并到 `master`，直到本地部署、OAuth/SMTP 配置和主要功能验收完成。
