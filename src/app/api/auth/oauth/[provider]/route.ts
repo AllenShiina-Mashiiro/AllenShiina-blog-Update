@@ -1,8 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/session";
 export async function GET(request: NextRequest, context: { params: Promise<{ provider: string }> }) {
   const { provider } = await context.params;
   if (provider !== "google" && provider !== "github") return NextResponse.json({ error: "Unsupported provider" }, { status: 404 });
+  const mode = request.nextUrl.searchParams.get("mode") === "link" ? "link" : "login";
+  const currentUser = mode === "link" ? await getCurrentUser() : null;
+  if (mode === "link" && !currentUser) return NextResponse.json({ error: "请先登录再绑定第三方账号。" }, { status: 401 });
   const clientId = provider === "google" ? process.env.GOOGLE_CLIENT_ID : process.env.GITHUB_CLIENT_ID;
   if (!clientId) return NextResponse.json({ error: `${provider} OAuth 尚未配置。` }, { status: 503 });
   const state = randomBytes(32).toString("hex");
@@ -23,5 +27,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ pro
   const response = NextResponse.redirect(url);
   response.cookies.set("nexus_oauth_state", state, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 600 });
   response.cookies.set("nexus_oauth_provider", provider, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 600 });
+  response.cookies.set("nexus_oauth_mode", mode, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 600 });
+  if (currentUser) response.cookies.set("nexus_oauth_user", currentUser.id, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 600 });
   return response;
 }
