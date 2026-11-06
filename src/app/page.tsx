@@ -13,7 +13,7 @@ export default async function HomePage() {
   return (
     <main className="shell">
       <header className="topbar glass">
-        <a className="brand" href="/">NEXUS<span>✿</span></a>
+        <Link className="brand" href="/">NEXUS<span>✿</span></Link>
         <nav aria-label="主导航">
           <Link href="/category/study">学习笔记</Link><Link href="/category/resource">资源</Link><Link href="/category/life">生活</Link><Link href="/category/article">文章</Link>
         </nav>
@@ -23,14 +23,14 @@ export default async function HomePage() {
         <p className="eyebrow">PERSONAL SPACE · EST. 2026</p>
         <h1>把喜欢的事物，<br/><em>认真地收藏起来。</em></h1>
         <p className="hero-copy">一个关于学习、资源、生活与创作的个人空间。</p>
-        <div className="hero-actions"><a className="primary-button" href="#archive">探索归档 <span>↗</span></a><a className="quiet-link" href="/about">关于 NEXUS</a></div>
+        <div className="hero-actions"><a className="primary-button" href="#archive">探索归档 <span>↗</span></a><Link className="quiet-link" href="/about">关于 NEXUS</Link></div>
       </section>
       <section id="archive" className="archive">
         <div className="section-heading"><div><p className="eyebrow">THE ARCHIVE</p><h2>内容空间</h2></div><span>01 — 04</span></div>
         <div className="section-grid">
-          {sections.map((section, index) => <a className="section-card glass" id={section.key.toLowerCase()} href={`/category/${section.key.toLowerCase()}`} key={section.key}>
+          {sections.map((section, index) => <Link className="section-card glass" id={section.key.toLowerCase()} href={`/category/${section.key.toLowerCase()}`} key={section.key}>
             <span className="card-index">0{index + 1}</span><span className="card-flower">✿</span><h3>{section.title}</h3><p>{section.description}</p><span className="card-arrow">↗</span>
-          </a>)}
+          </Link>)}
         </div>
       </section>
       <footer><span>NEXUS</span><span>Made with care · 2026</span></footer>
