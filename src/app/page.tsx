@@ -12,8 +12,10 @@ const sections = [
 
 export default async function HomePage() {
   const [viewer, announcements, latest] = await Promise.all([getCurrentUser(), prisma.announcement.findMany({where:{isActive:true},orderBy:{createdAt:"desc"},take:3,select:{id:true,title:true,body:true,createdAt:true}}), prisma.contentEntry.findMany({where:{status:"PUBLISHED"},orderBy:{publishedAt:"desc"},take:6,select:{id:true,title:true,slug:true,excerpt:true,category:true,publishedAt:true,author:{select:{nickname:true,username:true}}}})]);
-  const unreadCount = viewer ? await prisma.notification.count({where:{recipientId:viewer.id,readAt:null}}) : 0;
-  const pinned = viewer ? await prisma.contentPin.findMany({where:{userId:viewer.id,entry:{status:"PUBLISHED"}},orderBy:{position:"asc"},take:8,include:{entry:{select:{id:true,title:true,slug:true,excerpt:true,category:true}}}}) : [];
+  const [unreadCount, pinned] = viewer ? await Promise.all([
+    prisma.notification.count({where:{recipientId:viewer.id,readAt:null}}),
+    prisma.contentPin.findMany({where:{userId:viewer.id,entry:{status:"PUBLISHED"}},orderBy:{position:"asc"},take:8,include:{entry:{select:{id:true,title:true,slug:true,excerpt:true,category:true}}}})
+  ]) : [0, []];
   return (
     <main className="shell">
       <header className="topbar glass">
