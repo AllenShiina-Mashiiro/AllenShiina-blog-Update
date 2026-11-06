@@ -4,6 +4,8 @@ import SakuraPetals from "@/components/SakuraPetals";
 import ThemeToggle from "@/components/ThemeToggle";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const values = await prisma.siteSetting.findMany({ where: { key: { in: ["site.title", "site.description"] } } });
   const settings = new Map(values.map(item => [item.key, String(item.value ?? "")]));
