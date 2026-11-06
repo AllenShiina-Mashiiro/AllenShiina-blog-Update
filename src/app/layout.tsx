@@ -20,24 +20,24 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const [background, backgroundSecondary, logo, opacity, accent, theme] = await Promise.all([
-    prisma.siteSetting.findUnique({ where: { key: "site.background" }, select: { value: true } }),
-    prisma.siteSetting.findUnique({ where: { key: "site.backgroundSecondary" }, select: { value: true } }),
-    prisma.siteSetting.findUnique({ where: { key: "site.logo" }, select: { value: true } }),
-    prisma.siteSetting.findUnique({ where: { key: "site.backgroundOpacity" }, select: { value: true } }),
-    prisma.siteSetting.findUnique({ where: { key: "site.accentColor" }, select: { value: true } }),
-    prisma.siteSetting.findUnique({ where: { key: "site.defaultTheme" }, select: { value: true } }),
-  ]);
-  const backgroundUrl = typeof background?.value === "string" ? background.value : "";
-  const backgroundSecondaryUrl = typeof backgroundSecondary?.value === "string" ? backgroundSecondary.value : "";
-  const logoUrl = typeof logo?.value === "string" ? logo.value : "";
-  const opacityNumber = typeof opacity?.value === "string" ? Number(opacity.value) : 22;
+  const siteSettings = await prisma.siteSetting.findMany({
+    where: { key: { in: ["site.background", "site.backgroundSecondary", "site.logo", "site.backgroundOpacity", "site.accentColor", "site.defaultTheme"] } },
+    select: { key: true, value: true },
+  });
+  const settings = new Map(siteSettings.map((item) => [item.key, item.value]));
+  const background = settings.get("site.background");
+  const backgroundSecondary = settings.get("site.backgroundSecondary");
+  const logo = settings.get("site.logo");
+  const opacity = settings.get("site.backgroundOpacity");
+  const accent = settings.get("site.accentColor");
+  const theme = settings.get("site.defaultTheme");
+  const backgroundUrl = typeof background === "string" ? background : "";
+  const backgroundSecondaryUrl = typeof backgroundSecondary === "string" ? backgroundSecondary : "";
+  const logoUrl = typeof logo === "string" ? logo : "";
+  const opacityNumber = typeof opacity === "string" || typeof opacity === "number" ? Number(opacity) : 22;
   const opacityValue = Math.min(100, Math.max(0, Number.isFinite(opacityNumber) ? opacityNumber : 22)) / 100;
-  const accentValue =
-    typeof accent?.value === "string" && /^#[0-9a-f]{6}$/i.test(accent.value)
-      ? accent.value
-      : "#e9b8c9";
-  const defaultTheme = theme?.value === "light" ? "light" : "dark";
+  const accentValue = typeof accent === "string" && /^#[0-9a-f]{6}$/i.test(accent) ? accent : "#e9b8c9";
+  const defaultTheme = theme === "light" ? "light" : "dark";
 
   return (
     <html lang="zh-CN" data-theme={defaultTheme}>
