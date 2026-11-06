@@ -57,6 +57,7 @@ jobs:
           export POSTGRES_PASSWORD=ci-password
           export DATABASE_URL='postgresql://nexus:ci-password@db:5432/nexus_blog?schema=public'
           export APP_URL=http://127.0.0.1:3000
+          export SMOKE_DATABASE_URL='postgresql://nexus:ci-password@127.0.0.1:5433/nexus_blog?schema=public'
           cleanup() { docker compose down -v; }
           trap cleanup EXIT
           docker compose up -d --build
