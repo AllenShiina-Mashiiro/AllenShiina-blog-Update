@@ -51,3 +51,22 @@ jobs:
         env:
           POSTGRES_PASSWORD: ci-password
       - run: docker build -t nexus-blog:ci .
+      - name: Run Docker Compose startup and database smoke test
+        run: |
+          set -euo pipefail
+          export POSTGRES_PASSWORD=ci-password
+          export DATABASE_URL='postgresql://nexus:ci-password@db:5432/nexus_blog?schema=public'
+          export APP_URL=http://127.0.0.1:3000
+          cleanup() { docker compose down -v; }
+          trap cleanup EXIT
+          docker compose up -d --build
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:3000/api/health | grep -q '"database":"connected"'; then
+              echo "Compose app and PostgreSQL are healthy."
+              exit 0
+            fi
+            sleep 3
+          done
+          docker compose ps
+          docker compose logs app
+          exit 1
