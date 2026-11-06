@@ -1,0 +1,7 @@
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+export default async function SearchPage({searchParams}:{searchParams:Promise<{q?:string}>}){
+ const {q=""}=await searchParams;const query=q.trim().slice(0,100);
+ const entries=query?await prisma.contentEntry.findMany({where:{status:"PUBLISHED",OR:[{title:{contains:query,mode:"insensitive"}},{excerpt:{contains:query,mode:"insensitive"}},{body:{contains:query,mode:"insensitive"}}]},orderBy:{publishedAt:"desc"},take:50,select:{title:true,slug:true,excerpt:true,category:true,publishedAt:true,author:{select:{nickname:true}}}}):[];
+ return <main className="shell"><header className="topbar glass"><Link className="brand" href="/">NEXUS ✿</Link><Link href="/">首页</Link></header><section className="archive-page glass search-page"><p className="eyebrow">SEARCH THE ARCHIVE</p><h1>搜索内容</h1><form action="/search" className="search-form"><input name="q" defaultValue={query} placeholder="输入标题、摘要或正文关键词…" maxLength={100}/><button className="primary-button">搜索</button></form><p className="search-summary">{query?"“"+query+"” 的搜索结果："+entries.length+" 条":"输入关键词，检索公开发布的内容。"}</p><div className="entry-list">{entries.map(e=><Link className="entry-card glass" href={"/entry/"+e.slug} key={e.slug}><div><h2>{e.title}</h2><p>{e.excerpt||"暂无摘要"}</p><small>{e.author.nickname} · {e.category} · {e.publishedAt?.toLocaleDateString("zh-CN")}</small></div><span>↗</span></Link>)}</div></section></main>
+}
