@@ -22,7 +22,7 @@ export async function POST(request:Request){
  if(file.size<1||file.size>20*1024*1024)return NextResponse.json({error:"图片大小必须在 20MB 以内。"},{status:400});
  const extension=allowed.get(file.type);if(!extension)return NextResponse.json({error:"仅支持 JPG、PNG、WebP、GIF、AVIF 图片。"},{status:415});
  const bytes=Buffer.from(await file.arrayBuffer());if(!validImage(bytes,file.type))return NextResponse.json({error:"图片文件内容与格式不匹配。"},{status:415});
- const filename=randomUUID()+"."+extension;const directory=process.env.MEDIA_DIR||"/app/public/uploads";
+ const filename=randomUUID()+"."+extension;const directory=process.env.MEDIA_DIR||path.join(process.cwd(),"public","uploads");
  await mkdir(directory,{recursive:true});await writeFile(path.join(directory,filename),bytes,{flag:"wx"});
  const url=new URL("/uploads/"+filename,process.env.APP_URL||request.url).toString();
  const asset=await prisma.mediaAsset.create({data:{url,mimeType:file.type,sizeBytes:file.size,alt:file.name.slice(0,300)}});
