@@ -27,7 +27,7 @@ export default function ImageUploadField({ onUploaded, cropAspect }: Props) {
     setMessage("");
     try {
       let finalFile = file;
-      if (cropAspect) {
+      if (cropAspect && file.type !== "image/gif") {
         const bitmap = await createImageBitmap(file);
         let sourceWidth = bitmap.width;
         let sourceHeight = bitmap.height;
@@ -50,8 +50,8 @@ export default function ImageUploadField({ onUploaded, cropAspect }: Props) {
         bitmap.close();
 
         const preserveAlpha = file.type === "image/png" || file.type === "image/webp";
-        const outputType = preserveAlpha ? "image/png" : "image/jpeg";
-        const extension = preserveAlpha ? ".png" : ".jpg";
+        const outputType = preserveAlpha ? file.type : "image/jpeg";
+        const extension = outputType === "image/png" ? ".png" : outputType === "image/webp" ? ".webp" : ".jpg";
         const blob = await new Promise<Blob>((resolve, reject) => {
           canvas.toBlob(
             (value) => value ? resolve(value) : reject(new Error("图片裁剪失败")),
