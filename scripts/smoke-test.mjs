@@ -43,10 +43,12 @@ try {
       email: "smoke-" + suffix + "@example.invalid",
       username,
       nickname: "Smoke Test",
+      role: "ADMIN",
       emailVerifiedAt: new Date(),
     },
     select: { id: true, username: true },
   });
+  const smokeSettingKey = "smoke." + suffix;
   try {
     const token = randomBytes(32).toString("base64url");
     await prisma.session.create({
@@ -59,6 +61,16 @@ try {
     const headers = { "Content-Type": "application/json", Cookie: "nexus_session=" + token };
     const me = await checkJson("authenticated identity", "/api/auth/me", 200, { headers });
     if (me.user?.username !== "@" + username) throw new Error("authenticated identity: public handle mismatch");
+    await check("authenticated admin page", "/admin", 200, { headers });
+    const adminUsers = await checkJson("admin users API", "/api/admin/users", 200, { headers });
+    if (!adminUsers.users?.some((item) => item.username === username)) throw new Error("admin users API: smoke account missing");
+    await check("admin content API", "/api/admin/content", 200, { headers });
+    const settings = await checkJson("batch site settings API", "/api/admin/settings", 200, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify({ entries: [{ key: smokeSettingKey, value: "ok" }] }),
+    });
+    if (!settings.settings?.some((item) => item.key === smokeSettingKey)) throw new Error("batch site settings API: setting was not saved");
 
     const created = await checkJson("create published content", "/api/content", 201, {
       method: "POST",
@@ -105,10 +117,11 @@ try {
     const deleted = await checkJson("delete content", "/api/content/" + entry.id, 200, { method: "DELETE", headers });
     if (!deleted.ok) throw new Error("delete content: deletion failed");
   } finally {
+    await prisma.siteSetting.deleteMany({ where: { key: smokeSettingKey } }).catch(() => {});
     await prisma.user.delete({ where: { id: user.id } }).catch(() => {});
   }
 
-  console.log("Smoke tests passed: public pages, PostgreSQL, auth, content CRUD, profiles, likes, bookmarks, pins, comments and protected APIs.");
+  console.log("Smoke tests passed: public pages, PostgreSQL, auth, content CRUD, profiles, admin moderation, batch settings, likes, bookmarks, pins, comments and protected APIs.");
 } finally {
   await prisma.$disconnect();
 }
