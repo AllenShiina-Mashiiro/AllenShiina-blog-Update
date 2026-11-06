@@ -40,4 +40,8 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run build
+      - name: Validate Docker Compose configuration
+        run: docker compose config --quiet
+        env:
+          POSTGRES_PASSWORD: ci-password
       - run: docker build -t nexus-blog:ci .
